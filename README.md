@@ -8,6 +8,7 @@ Painel financeiro com frontend estatico e backend serverless preparado para Verc
 - Conexao com MongoDB Atlas via `dotenv`
 - CRUD de usuarios
 - CRUD de lancamentos financeiros
+- Login e cadastro com e-mail e senha
 - Categorias personalizadas por usuario
 - Frontend conectado ao backend, sem `localStorage` como base principal
 - Servidor local em `server.js` para desenvolver sem depender do CLI da Vercel
@@ -27,8 +28,26 @@ Copie `.env.example` para `.env` e preencha:
 ```env
 MONGODB_URI=seu_mongo_atlas_uri
 MONGODB_DB=finoffice
+EMAILJS_SERVICE_ID=service_xxxxxxx
+EMAILJS_TEMPLATE_ID=template_xxxxxxx
+EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
 PORT=3000
 ```
+
+## Fluxo com EmailJS
+
+- O cadastro cria a conta e envia um codigo OTP por e-mail
+- O login so e liberado depois da confirmacao com o codigo
+- A opcao "esqueci minha senha" envia outro codigo OTP
+- O usuario redefine a senha informando e-mail, codigo e nova senha
+
+Os templates do EmailJS devem aceitar estes parametros:
+
+- `to_email`
+- `to_name`
+- `code`
+- `valid_minutes`
+- `company`
 
 ## Como rodar localmente
 
@@ -76,6 +95,15 @@ A pasta `api/` sera usada como funcoes serverless automaticamente.
 - `GET /api/transactions/:id`
 - `PATCH /api/transactions/:id`
 - `DELETE /api/transactions/:id`
+
+### Autenticacao
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/verify-email`
+- `POST /api/auth/resend-verification-code`
+- `POST /api/auth/request-password-reset`
+- `POST /api/auth/reset-password`
 
 ### Healthcheck
 

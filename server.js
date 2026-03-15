@@ -2,6 +2,12 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 
+const loginHandler = require("./api/auth/login");
+const requestPasswordResetHandler = require("./api/auth/request-password-reset");
+const registerHandler = require("./api/auth/register");
+const resendVerificationCodeHandler = require("./api/auth/resend-verification-code");
+const resetPasswordHandler = require("./api/auth/reset-password");
+const verifyEmailHandler = require("./api/auth/verify-email");
 const healthHandler = require("./api/health");
 const usersHandler = require("./api/users/index");
 const userByIdHandler = require("./api/users/[id]");
@@ -44,6 +50,30 @@ const server = http.createServer(async (req, res) => {
 
     if (parsedUrl.pathname === "/api/health") {
         return healthHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/login") {
+        return loginHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/register") {
+        return registerHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/verify-email") {
+        return verifyEmailHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/resend-verification-code") {
+        return resendVerificationCodeHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/request-password-reset") {
+        return requestPasswordResetHandler(req, res);
+    }
+
+    if (parsedUrl.pathname === "/api/auth/reset-password") {
+        return resetPasswordHandler(req, res);
     }
 
     if (parsedUrl.pathname === "/api/users") {

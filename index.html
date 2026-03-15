@@ -66,383 +66,461 @@
         .modal-leave-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease-in; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden flex h-screen">
-
-    <!-- Mobile Overlay (Fundo escuro ao abrir sidebar no celular) -->
-    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900 bg-opacity-50 z-20 hidden lg:hidden transition-opacity" onclick="toggleSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="bg-dark-900 text-slate-300 w-72 flex-shrink-0 absolute inset-y-0 left-0 transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out z-30 flex flex-col shadow-xl">
-        
-        <!-- Logo -->
-        <div class="h-16 flex items-center px-6 bg-dark-800 border-b border-slate-700/50">
-            <i class="fa-solid fa-scale-balanced text-brand-500 text-2xl mr-3"></i>
-            <span class="text-xl font-bold text-white tracking-wide">Fin<span class="text-brand-500">Office</span></span>
-            <button class="ml-auto lg:hidden text-slate-400 hover:text-white" onclick="toggleSidebar()">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-
-        <!-- Resumo Rápido Sidebar -->
-        <div class="p-6 border-b border-slate-700/50">
-            <p class="text-xs uppercase tracking-wider text-slate-500 mb-2 font-semibold">Saldo Atual</p>
-            <h2 id="sidebarBalance" class="text-3xl font-bold text-white mb-1">R$ 0,00</h2>
-            <div id="sidebarBalanceStatus" class="flex items-center text-sm mt-2 text-brand-500">
-                <i class="fa-solid fa-arrow-trend-up mr-2"></i> Positivo
-            </div>
-        </div>
-
-        <!-- Navegação e Filtros -->
-        <div class="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
-            <nav class="space-y-1 mb-8">
-                <p class="px-3 text-xs uppercase tracking-wider text-slate-500 mb-2 font-semibold">Menu Principal</p>
-                <a href="#" class="flex items-center px-3 py-2.5 bg-brand-600/10 text-brand-500 rounded-lg group transition-colors">
-                    <i class="fa-solid fa-chart-pie w-6 text-center mr-2"></i>
-                    <span class="font-medium">Painel de Controle</span>
-                </a>
-            </nav>
-
-            <!-- Filtros Rápidos -->
-            <div class="px-3 mb-6">
-                <p class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Filtros Rápidos</p>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-slate-400 block mb-1">Mês de Referência</label>
-                        <select id="filterMonth" class="w-full bg-dark-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-white appearance-none">
-                            <option value="all">Todos os Meses</option>
-                            <!-- Preenchido via JS -->
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="text-xs text-slate-400 block mb-1">Tipo de Movimento</label>
-                        <select id="filterType" class="w-full bg-dark-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-white appearance-none">
-                            <option value="all">Entradas e Saídas</option>
-                            <option value="entrada">Apenas Entradas</option>
-                            <option value="saida">Apenas Saídas</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Info Usuário Base Sidebar -->
-        <div class="p-4 border-t border-slate-700/50 bg-dark-800 flex items-center">
-            <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold mr-3">
-                <i class="fa-solid fa-user-tie text-sm"></i>
-            </div>
-            <div>
-                <p id="sidebarUserName" class="text-sm font-medium text-white">Nenhum usuário</p>
-                <p id="sidebarOfficeName" class="text-xs text-slate-400">Cadastre um usuário para começar</p>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative w-full">
-        
-        <!-- Header -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-10 flex-shrink-0">
-            <div class="flex items-center">
-                <button class="lg:hidden text-slate-500 hover:text-slate-700 mr-4" onclick="toggleSidebar()">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-                <h1 class="text-xl font-semibold text-slate-800">Visão Geral</h1>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2">
-                    <select id="userSelect" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none min-w-48">
-                        <option value="">Carregando usuários...</option>
-                    </select>
-                    <button onclick="openUserModal()" class="border border-slate-300 hover:border-brand-500 hover:text-brand-600 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span>Novo usuário</span>
-                    </button>
-                </div>
-                <button id="newTransactionButton" onclick="openModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-brand-500/30 flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span class="hidden sm:inline">Novo Lançamento</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Área de Conteúdo Rolável -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
-            
-            <!-- Cards de Resumo -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Total de Entradas -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center">
-                    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mr-4">
-                        <i class="fa-solid fa-arrow-down text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-slate-500 mb-1">Total de Entradas</p>
-                        <h3 id="cardIncome" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
-                    </div>
-                </div>
-
-                <!-- Total de Saídas -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center">
-                    <div class="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mr-4">
-                        <i class="fa-solid fa-arrow-up text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-slate-500 mb-1">Total de Saídas</p>
-                        <h3 id="cardExpense" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
-                    </div>
-                </div>
-
-                <!-- Saldo Líquido -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center">
-                    <div id="cardBalanceIconBg" class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 mr-4 transition-colors">
-                        <i id="cardBalanceIcon" class="fa-solid fa-wallet text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-slate-500 mb-1">Saldo Líquido</p>
-                        <h3 id="cardBalance" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela de Lançamentos -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
-                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-                    <h2 class="text-lg font-semibold text-slate-800">Extrato Financeiro</h2>
-                    <span class="text-xs font-medium bg-slate-200 text-slate-600 py-1 px-2 rounded-md" id="transactionCount">0 registros</span>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                                <th class="px-6 py-4 font-medium">Data</th>
-                                <th class="px-6 py-4 font-medium">Descrição</th>
-                                <th class="px-6 py-4 font-medium">Categoria</th>
-                                <th class="px-6 py-4 font-medium text-right">Valor (R$)</th>
-                                <th class="px-6 py-4 font-medium text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionList" class="divide-y divide-slate-100 text-sm">
-                            <!-- Linhas inseridas via JS -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Estado Vazio -->
-                <div id="emptyState" class="hidden flex-col items-center justify-center py-12 px-4 text-center">
-                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-4">
-                        <i class="fa-regular fa-folder-open text-2xl"></i>
-                    </div>
-                    <h3 id="emptyStateTitle" class="text-base font-medium text-slate-700 mb-1">Nenhum lançamento encontrado</h3>
-                    <p id="emptyStateDescription" class="text-sm text-slate-500 max-w-sm">Não há registros para os filtros selecionados ou você ainda não cadastrou nenhuma movimentação.</p>
-                    <button id="emptyStateAction" onclick="openModal()" class="mt-4 text-brand-600 font-medium text-sm hover:underline">Adicionar primeiro lançamento</button>
-                </div>
-            </div>
-            
-            <!-- Espaço extra pro scroll -->
-            <div class="h-10"></div>
-            
-        </div>
-
-        <!-- Footer Profissional -->
-        <footer class="bg-white border-t border-slate-200 py-4 px-6 text-sm flex-shrink-0 z-10">
-            <div class="flex flex-col md:flex-row justify-between items-center text-slate-500">
-                <p>&copy; <span id="yearCopyright"></span> FinOffice. Todos os direitos reservados.</p>
-                <div class="flex items-center mt-2 md:mt-0 space-x-4">
-                    <span>Versão 1.0.0</span>
-                    <span class="hidden md:inline text-slate-300">|</span>
-                    <span class="flex items-center">
-                        <i class="fa-regular fa-clock mr-1"></i>
-                        Atualizado em: <span id="lastUpdated" class="ml-1 font-medium text-slate-700"></span>
-                    </span>
-                </div>
-            </div>
-        </footer>
-    </main>
-
-    <!-- Modal de Formulário -->
-    <div id="transactionModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        
-        <!-- Conteúdo do Modal -->
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 z-10 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-lg font-semibold text-slate-800" id="modalTitle">Novo Lançamento</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            
-            <form id="transactionForm" class="p-6 overflow-y-auto custom-scrollbar flex-1">
-                <input type="hidden" id="transactionId">
-                
-                <!-- Tipo de Lançamento (Radio Buttons) -->
-                <div class="mb-5">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Tipo de Movimentação</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer relative">
-                            <input type="radio" name="type" value="entrada" class="peer sr-only" checked onchange="updateCategoryOptions()">
-                            <div class="rounded-lg border border-slate-200 px-4 py-3 hover:bg-slate-50 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 transition-all flex items-center justify-center">
-                                <i class="fa-solid fa-arrow-down mr-2 text-emerald-500"></i>
-                                <span class="font-medium text-sm">Entrada</span>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+    <section id="authScreen" class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.18),_transparent_35%),linear-gradient(135deg,#f8fafc_0%,#ecfdf5_45%,#f8fafc_100%)] px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
+            <div class="grid w-full overflow-hidden rounded-[32px] border border-white/60 bg-white/80 shadow-2xl shadow-slate-900/10 backdrop-blur lg:grid-cols-[1.1fr_0.9fr]">
+                <div class="relative hidden overflow-hidden bg-slate-950 px-10 py-12 text-white lg:block">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(148,163,184,0.25),_transparent_30%)]"></div>
+                    <div class="relative z-10 flex h-full flex-col justify-between">
+                        <div>
+                            <div class="mb-8 inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-emerald-200">
+                                <i class="fa-solid fa-scale-balanced mr-2"></i>
+                                FinOffice
                             </div>
-                        </label>
-                        <label class="cursor-pointer relative">
-                            <input type="radio" name="type" value="saida" class="peer sr-only" onchange="updateCategoryOptions()">
-                            <div class="rounded-lg border border-slate-200 px-4 py-3 hover:bg-slate-50 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 transition-all flex items-center justify-center">
-                                <i class="fa-solid fa-arrow-up mr-2 text-rose-500"></i>
-                                <span class="font-medium text-sm">Saída</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+                            <h1 class="max-w-md text-4xl font-semibold leading-tight">Controle o caixa do seu escritorio em um painel limpo e pronto para producao.</h1>
+                            <p class="mt-5 max-w-lg text-base leading-7 text-slate-300">
+                                Entre para acompanhar receitas, saidas e categorias personalizadas. Se ainda nao tem conta, crie seu usuario em menos de um minuto.
+                            </p>
+                        </div>
 
-                <div class="mb-5">
-                    <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
-                    <input type="text" id="description" required placeholder="Ex: Pagamento de honorários processo X" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
-                    <div>
-                        <label for="amount" class="block text-sm font-medium text-slate-700 mb-1">Valor (R$)</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-slate-500 sm:text-sm">R$</span>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Acesso rapido</p>
+                                <p class="mt-2 text-lg font-semibold text-white">Login por e-mail</p>
+                                <p class="mt-2 text-sm text-slate-300">Use sua conta para voltar direto ao painel financeiro.</p>
                             </div>
-                            <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0,00" class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Nova conta</p>
+                                <p class="mt-2 text-lg font-semibold text-white">Criacao de usuario</p>
+                                <p class="mt-2 text-sm text-slate-300">Cadastre nome, escritorio, e-mail e senha para iniciar.</p>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label for="date" class="block text-sm font-medium text-slate-700 mb-1">Data</label>
-                        <input type="date" id="date" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm text-slate-700">
-                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
-                    <select id="category" required onchange="handleCategoryChange()" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm bg-white">
-                        <!-- Opções injetadas via JS -->
-                    </select>
-                    
-                    <!-- Campo de texto para nova categoria (oculto por padrão) -->
-                    <div id="newCategoryWrapper" class="hidden mt-3">
-                        <input type="text" id="newCategoryName" placeholder="Digite o nome da nova categoria..." class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm bg-brand-50">
+                <div class="px-6 py-8 sm:px-10 sm:py-10">
+                    <div class="mx-auto max-w-md">
+                        <div class="mb-8 lg:hidden">
+                            <div class="mb-4 inline-flex items-center rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                                <i class="fa-solid fa-scale-balanced mr-2"></i>
+                                FinOffice
+                            </div>
+                            <h1 class="text-3xl font-semibold text-slate-900">Seu painel financeiro com login e cadastro.</h1>
+                        </div>
+
+                        <div class="mb-6 rounded-2xl bg-slate-100 p-1">
+                            <div class="grid grid-cols-2 gap-1">
+                                <button id="loginTabButton" type="button" onclick="switchAuthMode('login')" class="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm">Entrar</button>
+                                <button id="registerTabButton" type="button" onclick="switchAuthMode('register')" class="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 transition-colors">Criar conta</button>
+                            </div>
+                        </div>
+
+                        <div id="authNotice" class="mb-6 hidden rounded-2xl border px-4 py-3 text-sm"></div>
+
+                        <form id="loginForm" class="space-y-5">
+                            <div>
+                                <label for="loginEmail" class="mb-1 block text-sm font-medium text-slate-700">E-mail</label>
+                                <input type="email" id="loginEmail" required placeholder="voce@escritorio.com" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="mb-1 block text-sm font-medium text-slate-700">Senha</label>
+                                <input type="password" id="loginPassword" required placeholder="Sua senha" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <button type="submit" class="w-full rounded-xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-700">
+                                Entrar no painel
+                            </button>
+                            <div class="flex items-center justify-between text-sm">
+                                <button type="button" onclick="switchAuthMode('recover')" class="font-medium text-slate-500 hover:text-brand-600">Esqueci minha senha</button>
+                                <button type="button" onclick="switchAuthMode('verify')" class="font-medium text-slate-500 hover:text-brand-600">Confirmar conta</button>
+                            </div>
+                            <p class="text-center text-sm text-slate-500">
+                                Ainda nao tem conta?
+                                <button type="button" onclick="switchAuthMode('register')" class="font-semibold text-brand-600 hover:text-brand-700">Criar usuario</button>
+                            </p>
+                        </form>
+
+                        <form id="registerForm" class="hidden space-y-5">
+                            <div>
+                                <label for="registerName" class="mb-1 block text-sm font-medium text-slate-700">Nome</label>
+                                <input type="text" id="registerName" required placeholder="Ex: Pedro Justo" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="registerOfficeName" class="mb-1 block text-sm font-medium text-slate-700">Nome do escritorio</label>
+                                <input type="text" id="registerOfficeName" placeholder="Ex: BancoJusto Advocacia" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="registerEmail" class="mb-1 block text-sm font-medium text-slate-700">E-mail</label>
+                                <input type="email" id="registerEmail" required placeholder="voce@escritorio.com" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div class="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                    <label for="registerPassword" class="mb-1 block text-sm font-medium text-slate-700">Senha</label>
+                                    <input type="password" id="registerPassword" required minlength="6" placeholder="Minimo 6 caracteres" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label for="registerPasswordConfirm" class="mb-1 block text-sm font-medium text-slate-700">Confirmar senha</label>
+                                    <input type="password" id="registerPasswordConfirm" required minlength="6" placeholder="Repita a senha" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800">
+                                Criar usuario
+                            </button>
+                            <p class="text-center text-sm text-slate-500">
+                                Ja possui conta?
+                                <button type="button" onclick="switchAuthMode('login')" class="font-semibold text-brand-600 hover:text-brand-700">Fazer login</button>
+                            </p>
+                        </form>
+
+                        <form id="recoverForm" class="hidden space-y-5">
+                            <div>
+                                <label for="recoverEmail" class="mb-1 block text-sm font-medium text-slate-700">E-mail da conta</label>
+                                <input type="email" id="recoverEmail" required placeholder="voce@escritorio.com" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800">
+                                Enviar código de recuperação
+                            </button>
+                            <p class="text-center text-sm text-slate-500">
+                                Lembrou a senha?
+                                <button type="button" onclick="switchAuthMode('login')" class="font-semibold text-brand-600 hover:text-brand-700">Voltar ao login</button>
+                            </p>
+                        </form>
+
+                        <form id="verifyEmailForm" class="hidden space-y-5">
+                            <div>
+                                <label for="verifyEmail" class="mb-1 block text-sm font-medium text-slate-700">E-mail cadastrado</label>
+                                <input type="email" id="verifyEmail" required placeholder="voce@escritorio.com" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="verifyCode" class="mb-1 block text-sm font-medium text-slate-700">Código de verificação</label>
+                                <input type="text" id="verifyCode" required inputmode="numeric" maxlength="6" placeholder="Digite o código" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm tracking-[0.35em] text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800">
+                                Confirmar conta
+                            </button>
+                            <div class="flex items-center justify-between text-sm">
+                                <button type="button" onclick="resendVerificationCode()" class="font-medium text-slate-500 hover:text-brand-600">Reenviar código</button>
+                                <button type="button" onclick="switchAuthMode('login')" class="font-medium text-slate-500 hover:text-brand-600">Voltar ao login</button>
+                            </div>
+                        </form>
+
+                        <form id="resetPasswordForm" class="hidden space-y-5">
+                            <div>
+                                <label for="resetEmail" class="mb-1 block text-sm font-medium text-slate-700">E-mail da conta</label>
+                                <input type="email" id="resetEmail" required placeholder="voce@escritorio.com" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="resetCode" class="mb-1 block text-sm font-medium text-slate-700">Código de recuperação</label>
+                                <input type="text" id="resetCode" required inputmode="numeric" maxlength="6" placeholder="Digite o código" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm tracking-[0.35em] text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="resetPassword" class="mb-1 block text-sm font-medium text-slate-700">Nova senha</label>
+                                <input type="password" id="resetPassword" required minlength="6" placeholder="Minimo 6 caracteres" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label for="resetPasswordConfirm" class="mb-1 block text-sm font-medium text-slate-700">Confirmar nova senha</label>
+                                <input type="password" id="resetPasswordConfirm" required minlength="6" placeholder="Repita a nova senha" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-800">
+                                Redefinir senha
+                            </button>
+                            <p class="text-center text-sm text-slate-500">
+                                Deseja voltar?
+                                <button type="button" onclick="switchAuthMode('login')" class="font-semibold text-brand-600 hover:text-brand-700">Ir para login</button>
+                            </p>
+                        </form>
                     </div>
                 </div>
-
-                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3 mt-auto">
-                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors shadow-sm">
-                        Salvar Lançamento
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Modal de Usuário -->
-    <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeUserModal()"></div>
+    <div id="appShell" class="hidden h-screen w-full overflow-hidden">
+        <div id="mobileOverlay" class="fixed inset-0 z-20 hidden bg-slate-900 bg-opacity-50 transition-opacity lg:hidden" onclick="toggleSidebar()"></div>
 
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 z-10 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-lg font-semibold text-slate-800">Novo Usuário</h3>
-                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+        <aside id="sidebar" class="absolute inset-y-0 left-0 z-30 flex w-72 flex-shrink-0 -translate-x-full flex-col bg-dark-900 text-slate-300 shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0">
+            <div class="flex h-16 items-center border-b border-slate-700/50 bg-dark-800 px-6">
+                <i class="fa-solid fa-scale-balanced mr-3 text-2xl text-brand-500"></i>
+                <span class="text-xl font-bold tracking-wide text-white">Fin<span class="text-brand-500">Office</span></span>
+                <button class="ml-auto text-slate-400 hover:text-white lg:hidden" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
-            <form id="userForm" class="p-6">
-                <div class="mb-4">
-                    <label for="userName" class="block text-sm font-medium text-slate-700 mb-1">Nome do usuário</label>
-                    <input type="text" id="userName" required placeholder="Ex: Paula Souza" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+            <div class="border-b border-slate-700/50 p-6">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Atual</p>
+                <h2 id="sidebarBalance" class="mb-1 text-3xl font-bold text-white">R$ 0,00</h2>
+                <div id="sidebarBalanceStatus" class="mt-2 flex items-center text-sm text-brand-500">
+                    <i class="fa-solid fa-arrow-trend-up mr-2"></i> Positivo
                 </div>
+            </div>
 
-                <div class="mb-4">
-                    <label for="officeName" class="block text-sm font-medium text-slate-700 mb-1">Nome do escritório</label>
-                    <input type="text" id="officeName" placeholder="Ex: Escritório Central" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+            <div class="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+                <nav class="mb-8 space-y-1">
+                    <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Menu Principal</p>
+                    <a href="#" class="group flex items-center rounded-lg bg-brand-600/10 px-3 py-2.5 text-brand-500 transition-colors">
+                        <i class="fa-solid fa-chart-pie mr-2 w-6 text-center"></i>
+                        <span class="font-medium">Painel de Controle</span>
+                    </a>
+                </nav>
+
+                <div class="mb-6 px-3">
+                    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Filtros Rápidos</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="mb-1 block text-xs text-slate-400">Mês de Referência</label>
+                            <select id="filterMonth" class="w-full appearance-none rounded-lg border border-slate-700 bg-dark-800 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                <option value="all">Todos os Meses</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-xs text-slate-400">Tipo de Movimento</label>
+                            <select id="filterType" class="w-full appearance-none rounded-lg border border-slate-700 bg-dark-800 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                <option value="all">Entradas e Saídas</option>
+                                <option value="entrada">Apenas Entradas</option>
+                                <option value="saida">Apenas Saídas</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="mb-6">
-                    <label for="userEmail" class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-                    <input type="email" id="userEmail" placeholder="Ex: contato@seuescritorio.com" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+            <div class="flex items-center border-t border-slate-700/50 bg-dark-800 p-4">
+                <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-600 font-bold text-white">
+                    <i class="fa-solid fa-user-tie text-sm"></i>
                 </div>
+                <div>
+                    <p id="sidebarUserName" class="text-sm font-medium text-white">Usuário</p>
+                    <p id="sidebarOfficeName" class="text-xs text-slate-400">Escritorio</p>
+                </div>
+            </div>
+        </aside>
 
-                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
-                    <button type="button" onclick="closeUserModal()" class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors">
-                        Cancelar
+        <main class="relative flex h-screen w-full flex-1 flex-col overflow-hidden">
+            <header class="z-10 flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button class="mr-4 text-slate-500 hover:text-slate-700 lg:hidden" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
-                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors shadow-sm">
-                        Salvar Usuário
+                    <div>
+                        <h1 class="text-xl font-semibold text-slate-800">Visão Geral</h1>
+                        <p class="hidden text-sm text-slate-500 sm:block">Acompanhe seu fluxo financeiro em tempo real.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 sm:flex">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <p id="headerUserName" class="text-sm font-semibold text-slate-800">Usuário</p>
+                            <p id="headerUserEmail" class="text-xs text-slate-500">email@escritorio.com</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
+                        <i class="fa-solid fa-right-from-bracket sm:mr-2"></i>
+                        <span class="hidden sm:inline">Sair</span>
+                    </button>
+                    <button id="newTransactionButton" onclick="openModal()" class="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-brand-500/30 transition-colors hover:bg-brand-700">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Novo Lançamento</span>
                     </button>
                 </div>
-            </form>
+            </header>
+
+            <div class="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <div class="flex items-center rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <div class="mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                            <i class="fa-solid fa-arrow-down text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-sm font-medium text-slate-500">Total de Entradas</p>
+                            <h3 id="cardIncome" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <div class="mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+                            <i class="fa-solid fa-arrow-up text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-sm font-medium text-slate-500">Total de Saídas</p>
+                            <h3 id="cardExpense" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <div id="cardBalanceIconBg" class="mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600 transition-colors">
+                            <i id="cardBalanceIcon" class="fa-solid fa-wallet text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-sm font-medium text-slate-500">Saldo Líquido</p>
+                            <h3 id="cardBalance" class="text-2xl font-bold text-slate-800">R$ 0,00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8 flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-slate-800">Extrato Financeiro</h2>
+                        <span id="transactionCount" class="rounded-md bg-slate-200 px-2 py-1 text-xs font-medium text-slate-600">0 registros</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-[800px] w-full border-collapse text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                                    <th class="px-6 py-4 font-medium">Data</th>
+                                    <th class="px-6 py-4 font-medium">Descrição</th>
+                                    <th class="px-6 py-4 font-medium">Categoria</th>
+                                    <th class="px-6 py-4 text-right font-medium">Valor (R$)</th>
+                                    <th class="px-6 py-4 text-center font-medium">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionList" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="emptyState" class="hidden flex-col items-center justify-center px-4 py-12 text-center">
+                        <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                            <i class="fa-regular fa-folder-open text-2xl"></i>
+                        </div>
+                        <h3 id="emptyStateTitle" class="mb-1 text-base font-medium text-slate-700">Nenhum lançamento encontrado</h3>
+                        <p id="emptyStateDescription" class="max-w-sm text-sm text-slate-500">Não há registros para os filtros selecionados ou você ainda não cadastrou nenhuma movimentação.</p>
+                        <button id="emptyStateAction" onclick="openModal()" class="mt-4 text-sm font-medium text-brand-600 hover:underline">Adicionar primeiro lançamento</button>
+                    </div>
+                </div>
+
+                <div class="h-10"></div>
+            </div>
+
+            <footer class="z-10 flex-shrink-0 border-t border-slate-200 bg-white px-6 py-4 text-sm">
+                <div class="flex flex-col items-center justify-between text-slate-500 md:flex-row">
+                    <p>&copy; <span id="yearCopyright"></span> FinOffice. Todos os direitos reservados.</p>
+                    <div class="mt-2 flex items-center space-x-4 md:mt-0">
+                        <span>Versão 1.1.0</span>
+                        <span class="hidden text-slate-300 md:inline">|</span>
+                        <span class="flex items-center">
+                            <i class="fa-regular fa-clock mr-1"></i>
+                            Atualizado em: <span id="lastUpdated" class="ml-1 font-medium text-slate-700"></span>
+                        </span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+
+        <div id="transactionModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+
+            <div class="z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl mx-4">
+                <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+                    <h3 id="modalTitle" class="text-lg font-semibold text-slate-800">Novo Lançamento</h3>
+                    <button onclick="closeModal()" class="p-1 text-slate-400 transition-colors hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <form id="transactionForm" class="custom-scrollbar flex-1 overflow-y-auto p-6">
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-medium text-slate-700">Tipo de Movimentação</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="type" value="entrada" class="peer sr-only" checked onchange="updateCategoryOptions()">
+                                <div class="flex items-center justify-center rounded-lg border border-slate-200 px-4 py-3 transition-all hover:bg-slate-50 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700">
+                                    <i class="fa-solid fa-arrow-down mr-2 text-emerald-500"></i>
+                                    <span class="text-sm font-medium">Entrada</span>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="type" value="saida" class="peer sr-only" onchange="updateCategoryOptions()">
+                                <div class="flex items-center justify-center rounded-lg border border-slate-200 px-4 py-3 transition-all hover:bg-slate-50 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700">
+                                    <i class="fa-solid fa-arrow-up mr-2 text-rose-500"></i>
+                                    <span class="text-sm font-medium">Saída</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label for="description" class="mb-1 block text-sm font-medium text-slate-700">Descrição</label>
+                        <input type="text" id="description" required placeholder="Ex: Pagamento de honorários processo X" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500 sm:text-sm">
+                    </div>
+
+                    <div class="mb-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="amount" class="mb-1 block text-sm font-medium text-slate-700">Valor (R$)</label>
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span class="text-slate-500 sm:text-sm">R$</span>
+                                </div>
+                                <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0,00" class="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-4 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500 sm:text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="date" class="mb-1 block text-sm font-medium text-slate-700">Data</label>
+                            <input type="date" id="date" required class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-700 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="category" class="mb-1 block text-sm font-medium text-slate-700">Categoria</label>
+                        <select id="category" required onchange="handleCategoryChange()" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500 sm:text-sm"></select>
+                        <div id="newCategoryWrapper" class="mt-3 hidden">
+                            <input type="text" id="newCategoryName" placeholder="Digite o nome da nova categoria..." class="w-full rounded-lg border border-slate-300 bg-brand-50 px-4 py-2.5 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div class="mt-auto flex justify-end gap-3 border-t border-slate-100 pt-4">
+                        <button type="button" onclick="closeModal()" class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                            Salvar Lançamento
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Script Principal -->
     <script>
-        // --- 1. CONFIGURAÇÕES E ESTADO GLOBAL ---
+        const API_BASE = "/api";
+        const SESSION_KEY = "finOffice_sessionUserId";
 
-        const API_BASE = '/api';
-        let customCategories = {
-            entrada: [],
-            saida: []
-        };
+        let currentUser = null;
+        let customCategories = { entrada: [], saida: [] };
         let transactions = [];
-        let users = [];
         let editingId = null;
-        let activeUserId = localStorage.getItem('finOffice_activeUserId') || '';
+        let authMode = "login";
 
-        // --- 2. INICIALIZAÇÃO E EVENTOS ---
+        const appShell = document.getElementById("appShell");
+        const authScreen = document.getElementById("authScreen");
+        const modal = document.getElementById("transactionModal");
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             const now = new Date();
-            document.getElementById('yearCopyright').textContent = now.getFullYear();
+            document.getElementById("yearCopyright").textContent = now.getFullYear();
+            document.getElementById("transactionForm").addEventListener("submit", handleTransactionSubmit);
+            document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
+            document.getElementById("registerForm").addEventListener("submit", handleRegisterSubmit);
+            document.getElementById("recoverForm").addEventListener("submit", handleRecoverSubmit);
+            document.getElementById("verifyEmailForm").addEventListener("submit", handleVerifyEmailSubmit);
+            document.getElementById("resetPasswordForm").addEventListener("submit", handleResetPasswordSubmit);
+            document.getElementById("filterMonth").addEventListener("change", render);
+            document.getElementById("filterType").addEventListener("change", render);
+            document.getElementById("date").valueAsDate = new Date();
             updateLastUpdatedTime();
-
-            document.getElementById('transactionForm').addEventListener('submit', handleFormSubmit);
-            document.getElementById('userForm').addEventListener('submit', handleUserSubmit);
-            document.getElementById('filterMonth').addEventListener('change', render);
-            document.getElementById('filterType').addEventListener('change', render);
-            document.getElementById('userSelect').addEventListener('change', handleUserChange);
-            document.getElementById('date').valueAsDate = new Date();
-
-            await initializeApp();
+            switchAuthMode("login");
+            await restoreSession();
         });
-
-        // --- 3. LÓGICA DE NEGÓCIO (CRUD E STORAGE) ---
-
-        async function initializeApp() {
-            try {
-                await loadUsers();
-
-                if (users.length === 0) {
-                    updateUserSummary(null);
-                    populateMonthFilter();
-                    render();
-                    openUserModal();
-                    return;
-                }
-
-                await syncActiveUser(activeUserId);
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Nao foi possivel carregar os dados do sistema.');
-            }
-        }
 
         async function apiFetch(path, options = {}) {
             const config = {
-                method: options.method || 'GET',
+                method: options.method || "GET",
                 headers: {
-                    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                    ...(options.body ? { "Content-Type": "application/json" } : {}),
                     ...(options.headers || {})
                 }
             };
@@ -456,154 +534,338 @@
             const data = rawText ? JSON.parse(rawText) : {};
 
             if (!response.ok) {
-                const details = Array.isArray(data.details) ? ` ${data.details.join(' ')}` : '';
-                throw new Error((data.error || 'Erro ao comunicar com a API.') + details);
+                const details = Array.isArray(data.details) ? ` ${data.details.join(" ")}` : "";
+                const error = new Error((data.error || "Erro ao comunicar com a API.") + details);
+                error.code = data.code || null;
+                throw error;
             }
 
             return data;
         }
 
-        function normalizeCategories(categories) {
-            return {
-                entrada: Array.isArray(categories?.entrada) ? [...categories.entrada].sort((a, b) => a.localeCompare(b, 'pt-BR')) : [],
-                saida: Array.isArray(categories?.saida) ? [...categories.saida].sort((a, b) => a.localeCompare(b, 'pt-BR')) : []
-            };
-        }
+        async function restoreSession() {
+            const sessionUserId = localStorage.getItem(SESSION_KEY);
 
-        async function loadUsers() {
-            const data = await apiFetch('/users');
-            users = data.users || [];
-            populateUserSelect();
-        }
-
-        function populateUserSelect() {
-            const select = document.getElementById('userSelect');
-            select.innerHTML = '';
-
-            if (users.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Cadastre um usuario';
-                select.appendChild(option);
-                select.value = '';
+            if (!sessionUserId) {
+                showAuthScreen("login");
                 return;
             }
 
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.name} - ${user.officeName || 'Escritorio'}`;
-                select.appendChild(option);
-            });
-
-            select.value = activeUserId && users.some(user => user.id === activeUserId) ? activeUserId : users[0].id;
+            try {
+                const response = await apiFetch(`/users/${sessionUserId}`);
+                currentUser = response.user;
+                showAuthenticatedApp();
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                clearSession();
+                showAuthScreen("login");
+            }
         }
 
-        async function syncActiveUser(preferredUserId) {
-            if (preferredUserId && users.some(user => user.id === preferredUserId)) {
-                activeUserId = preferredUserId;
-            } else {
-                activeUserId = users[0]?.id || '';
+        function switchAuthMode(mode) {
+            authMode = mode;
+            const isLogin = mode === "login";
+            const isRegister = mode === "register";
+            const loginTabButton = document.getElementById("loginTabButton");
+            const registerTabButton = document.getElementById("registerTabButton");
+            const loginForm = document.getElementById("loginForm");
+            const registerForm = document.getElementById("registerForm");
+            const recoverForm = document.getElementById("recoverForm");
+            const verifyEmailForm = document.getElementById("verifyEmailForm");
+            const resetPasswordForm = document.getElementById("resetPasswordForm");
+
+            loginTabButton.className = isLogin
+                ? "rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm"
+                : "rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 transition-colors";
+            registerTabButton.className = isRegister
+                ? "rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm"
+                : "rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 transition-colors";
+
+            loginForm.classList.toggle("hidden", !isLogin);
+            registerForm.classList.toggle("hidden", !isRegister);
+            recoverForm.classList.toggle("hidden", mode !== "recover");
+            verifyEmailForm.classList.toggle("hidden", mode !== "verify");
+            resetPasswordForm.classList.toggle("hidden", mode !== "reset");
+            clearAuthMessage();
+        }
+
+        function showAuthScreen(mode = "login") {
+            appShell.classList.add("hidden");
+            appShell.classList.remove("flex");
+            authScreen.classList.remove("hidden");
+            switchAuthMode(mode);
+            document.body.classList.remove("overflow-hidden");
+        }
+
+        function showAuthenticatedApp() {
+            authScreen.classList.add("hidden");
+            appShell.classList.remove("hidden");
+            appShell.classList.add("flex");
+            updateUserSummary(currentUser);
+            updateHeaderUser(currentUser);
+        }
+
+        function persistSession(userId) {
+            localStorage.setItem(SESSION_KEY, userId);
+        }
+
+        function clearSession() {
+            localStorage.removeItem(SESSION_KEY);
+        }
+
+        function setAuthMessage(type, message) {
+            const notice = document.getElementById("authNotice");
+            notice.textContent = message;
+            notice.className = type === "error"
+                ? "mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                : "mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700";
+        }
+
+        function clearAuthMessage() {
+            const notice = document.getElementById("authNotice");
+            notice.className = "mb-6 hidden rounded-2xl border px-4 py-3 text-sm";
+            notice.textContent = "";
+        }
+
+        async function handleLoginSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            try {
+                const payload = {
+                    email: document.getElementById("loginEmail").value.trim(),
+                    password: document.getElementById("loginPassword").value
+                };
+
+                const response = await apiFetch("/auth/login", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+
+                currentUser = response.user;
+                persistSession(currentUser.id);
+                document.getElementById("loginForm").reset();
+                showAuthenticatedApp();
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                if (error.code === "EMAIL_NOT_VERIFIED") {
+                    document.getElementById("verifyEmail").value = payload.email;
+                    setAuthMessage("error", `${error.message} Use a aba de confirmar conta para validar o codigo.`);
+                    return;
+                }
+
+                setAuthMessage("error", error.message || "Nao foi possivel fazer login.");
+            }
+        }
+
+        async function handleRegisterSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            const password = document.getElementById("registerPassword").value;
+            const passwordConfirm = document.getElementById("registerPasswordConfirm").value;
+
+            if (password !== passwordConfirm) {
+                setAuthMessage("error", "As senhas informadas precisam ser iguais.");
+                return;
             }
 
-            localStorage.setItem('finOffice_activeUserId', activeUserId);
-            populateUserSelect();
-            await loadData();
+            try {
+                const payload = {
+                    name: document.getElementById("registerName").value.trim(),
+                    officeName: document.getElementById("registerOfficeName").value.trim(),
+                    email: document.getElementById("registerEmail").value.trim(),
+                    password
+                };
+
+                const response = await apiFetch("/auth/register", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById("registerForm").reset();
+                document.getElementById("verifyEmail").value = payload.email;
+                switchAuthMode("verify");
+                setAuthMessage(
+                    response.emailSent === false ? "error" : "success",
+                    response.message || "Conta criada. Confira seu e-mail para pegar o codigo de confirmacao."
+                );
+            } catch (error) {
+                console.error(error);
+                setAuthMessage("error", error.message || "Nao foi possivel criar o usuario.");
+            }
+        }
+
+        async function handleRecoverSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            try {
+                const response = await apiFetch("/auth/request-password-reset", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: document.getElementById("recoverEmail").value.trim()
+                    })
+                });
+
+                const email = document.getElementById("recoverEmail").value.trim();
+                document.getElementById("recoverForm").reset();
+                document.getElementById("resetEmail").value = email;
+                switchAuthMode("reset");
+                setAuthMessage("success", response.message || "Enviamos o codigo de recuperacao.");
+            } catch (error) {
+                console.error(error);
+                setAuthMessage("error", error.message || "Nao foi possivel solicitar a recuperacao.");
+            }
+        }
+
+        async function handleVerifyEmailSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            try {
+                const response = await apiFetch("/auth/verify-email", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: document.getElementById("verifyEmail").value.trim(),
+                        code: document.getElementById("verifyCode").value.trim()
+                    })
+                });
+
+                document.getElementById("verifyEmailForm").reset();
+                switchAuthMode("login");
+                setAuthMessage("success", response.message || "Conta confirmada com sucesso.");
+            } catch (error) {
+                console.error(error);
+                setAuthMessage("error", error.message || "Nao foi possivel confirmar a conta.");
+            }
+        }
+
+        async function handleResetPasswordSubmit(event) {
+            event.preventDefault();
+            clearAuthMessage();
+
+            const password = document.getElementById("resetPassword").value;
+            const passwordConfirm = document.getElementById("resetPasswordConfirm").value;
+
+            if (password !== passwordConfirm) {
+                setAuthMessage("error", "As senhas informadas precisam ser iguais.");
+                return;
+            }
+
+            try {
+                const response = await apiFetch("/auth/reset-password", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: document.getElementById("resetEmail").value.trim(),
+                        code: document.getElementById("resetCode").value.trim(),
+                        password
+                    })
+                });
+
+                document.getElementById("resetPasswordForm").reset();
+                switchAuthMode("login");
+                setAuthMessage("success", response.message || "Senha redefinida com sucesso.");
+            } catch (error) {
+                console.error(error);
+                setAuthMessage("error", error.message || "Nao foi possivel redefinir a senha.");
+            }
+        }
+
+        async function resendVerificationCode() {
+            clearAuthMessage();
+            const email = document.getElementById("verifyEmail").value.trim() || document.getElementById("loginEmail").value.trim();
+
+            if (!email) {
+                setAuthMessage("error", "Informe o e-mail da conta para reenviar o codigo.");
+                return;
+            }
+
+            try {
+                const response = await apiFetch("/auth/resend-verification-code", {
+                    method: "POST",
+                    body: JSON.stringify({ email })
+                });
+                document.getElementById("verifyEmail").value = email;
+                switchAuthMode("verify");
+                setAuthMessage("success", response.message || "Novo codigo enviado.");
+            } catch (error) {
+                console.error(error);
+                setAuthMessage("error", error.message || "Nao foi possivel reenviar o codigo.");
+            }
         }
 
         async function loadData() {
-            if (!activeUserId) {
-                transactions = [];
-                customCategories = { entrada: [], saida: [] };
-                updateUserSummary(null);
-                populateMonthFilter();
-                render();
+            if (!currentUser) {
+                resetDashboard();
                 return;
             }
 
             const [userResponse, transactionsResponse] = await Promise.all([
-                apiFetch(`/users/${activeUserId}`),
-                apiFetch(`/transactions?userId=${activeUserId}`)
+                apiFetch(`/users/${currentUser.id}`),
+                apiFetch(`/transactions?userId=${currentUser.id}`)
             ]);
 
-            const currentUser = userResponse.user;
+            currentUser = userResponse.user;
             transactions = transactionsResponse.transactions || [];
             customCategories = normalizeCategories(currentUser.categories);
-            users = users.map(user => user.id === currentUser.id ? currentUser : user);
 
             updateUserSummary(currentUser);
-            populateUserSelect();
+            updateHeaderUser(currentUser);
             populateMonthFilter();
             updateLastUpdatedTime();
             render();
         }
 
-        async function handleUserChange(event) {
-            try {
-                await syncActiveUser(event.target.value);
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Nao foi possivel trocar o usuario ativo.');
-            }
+        function logout() {
+            closeModal();
+            currentUser = null;
+            clearSession();
+            clearAuthRoute();
+            resetDashboard();
+            document.getElementById("loginForm").reset();
+            document.getElementById("registerForm").reset();
+            document.getElementById("recoverForm").reset();
+            document.getElementById("verifyEmailForm").reset();
+            document.getElementById("resetPasswordForm").reset();
+            showAuthScreen("login");
         }
 
-        async function handleUserSubmit(e) {
-            e.preventDefault();
+        async function handleTransactionSubmit(event) {
+            event.preventDefault();
 
-            try {
-                const payload = {
-                    name: document.getElementById('userName').value.trim(),
-                    officeName: document.getElementById('officeName').value.trim(),
-                    email: document.getElementById('userEmail').value.trim()
-                };
-
-                const response = await apiFetch('/users', {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-
-                closeUserModal();
-                await loadUsers();
-                await syncActiveUser(response.user.id);
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Nao foi possivel salvar o usuario.');
-            }
-        }
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-
-            if (!activeUserId) {
-                alert('Cadastre um usuario antes de adicionar lancamentos.');
-                openUserModal();
+            if (!currentUser) {
+                showAuthScreen("login");
                 return;
             }
 
-            const description = document.getElementById('description').value.trim();
-            const amount = parseFloat(document.getElementById('amount').value);
-            const date = document.getElementById('date').value;
+            const description = document.getElementById("description").value.trim();
+            const amount = parseFloat(document.getElementById("amount").value);
+            const date = document.getElementById("date").value;
             const type = document.querySelector('input[name="type"]:checked').value;
-            let category = document.getElementById('category').value;
+            let category = document.getElementById("category").value;
 
-            if (category === '__new__') {
-                const newCatName = document.getElementById('newCategoryName').value.trim();
-                if (!newCatName) {
-                    alert('Por favor, digite o nome da nova categoria.');
+            if (category === "__new__") {
+                const newCategoryName = document.getElementById("newCategoryName").value.trim();
+
+                if (!newCategoryName) {
+                    alert("Por favor, digite o nome da nova categoria.");
                     return;
                 }
 
-                const existingCategory = customCategories[type].find(cat => cat.toLowerCase() === newCatName.toLowerCase());
-                category = existingCategory || newCatName;
+                const existingCategory = customCategories[type].find((item) => item.toLowerCase() === newCategoryName.toLowerCase());
+                category = existingCategory || newCategoryName;
             }
 
-            if (!description || isNaN(amount) || !date || !category) {
-                alert('Por favor, preencha todos os campos.');
+            if (!description || Number.isNaN(amount) || !date || !category) {
+                alert("Por favor, preencha todos os campos.");
                 return;
             }
 
             const payload = {
-                userId: activeUserId,
+                userId: currentUser.id,
                 description,
                 amount,
                 date,
@@ -614,12 +876,12 @@
             try {
                 if (editingId) {
                     await apiFetch(`/transactions/${editingId}`, {
-                        method: 'PATCH',
+                        method: "PATCH",
                         body: JSON.stringify(payload)
                     });
                 } else {
-                    await apiFetch('/transactions', {
-                        method: 'POST',
+                    await apiFetch("/transactions", {
+                        method: "POST",
                         body: JSON.stringify(payload)
                     });
                 }
@@ -628,34 +890,34 @@
                 await loadData();
             } catch (error) {
                 console.error(error);
-                alert(error.message || 'Nao foi possivel salvar o lancamento.');
+                alert(error.message || "Nao foi possivel salvar o lancamento.");
             }
         }
 
         function editTransaction(id) {
-            const transaction = transactions.find(t => t.id === id);
-            if (!transaction) return;
+            const transaction = transactions.find((item) => item.id === id);
+
+            if (!transaction) {
+                return;
+            }
 
             editingId = id;
-            document.getElementById('modalTitle').textContent = 'Editar Lançamento';
-            
-            document.getElementById('description').value = transaction.description;
-            document.getElementById('amount').value = transaction.amount;
-            document.getElementById('date').value = transaction.date;
-            
-            // Set radio type and trigger category update
-            const typeRadios = document.getElementsByName('type');
-            for (let radio of typeRadios) {
+            document.getElementById("modalTitle").textContent = "Editar Lançamento";
+            document.getElementById("description").value = transaction.description;
+            document.getElementById("amount").value = transaction.amount;
+            document.getElementById("date").value = transaction.date;
+
+            const typeRadios = document.getElementsByName("type");
+            for (const radio of typeRadios) {
                 if (radio.value === transaction.type) {
                     radio.checked = true;
                     updateCategoryOptions();
                     break;
                 }
             }
-            
-            // Set category after options are populated
+
             setTimeout(() => {
-                document.getElementById('category').value = transaction.category;
+                document.getElementById("category").value = transaction.category;
                 handleCategoryChange();
             }, 10);
 
@@ -663,345 +925,275 @@
         }
 
         async function deleteTransaction(id) {
-            if (!confirm('Tem certeza que deseja excluir este lancamento? Esta acao nao pode ser desfeita.')) {
+            if (!confirm("Tem certeza que deseja excluir este lancamento? Esta acao nao pode ser desfeita.")) {
                 return;
             }
 
             try {
-                await apiFetch(`/transactions/${id}`, {
-                    method: 'DELETE'
-                });
+                await apiFetch(`/transactions/${id}`, { method: "DELETE" });
                 await loadData();
             } catch (error) {
                 console.error(error);
-                alert(error.message || 'Nao foi possivel excluir o lancamento.');
+                alert(error.message || "Nao foi possivel excluir o lancamento.");
             }
         }
 
-        // --- 4. RENDERIZAÇÃO E UI ---
-
         function render() {
-            const hasActiveUser = Boolean(activeUserId);
-            const filterMonth = document.getElementById('filterMonth').value;
-            const filterType = document.getElementById('filterType').value;
-
-            let filteredTransactions = transactions.filter(t => {
-                const monthMatch = filterMonth === 'all' || t.date.substring(0, 7) === filterMonth;
-                const typeMatch = filterType === 'all' || t.type === filterType;
+            const filterMonth = document.getElementById("filterMonth").value;
+            const filterType = document.getElementById("filterType").value;
+            const filteredTransactions = transactions.filter((transaction) => {
+                const monthMatch = filterMonth === "all" || transaction.date.substring(0, 7) === filterMonth;
+                const typeMatch = filterType === "all" || transaction.type === filterType;
                 return monthMatch && typeMatch;
             });
 
-            // Cálculos
             let totalIncome = 0;
             let totalExpense = 0;
 
-            filteredTransactions.forEach(t => {
-                if (t.type === 'entrada') totalIncome += t.amount;
-                else if (t.type === 'saida') totalExpense += t.amount;
+            filteredTransactions.forEach((transaction) => {
+                if (transaction.type === "entrada") {
+                    totalIncome += transaction.amount;
+                } else if (transaction.type === "saida") {
+                    totalExpense += transaction.amount;
+                }
             });
 
             const balance = totalIncome - totalExpense;
 
-            // Atualizar Cards e Sidebar
-            document.getElementById('cardIncome').textContent = formatCurrency(totalIncome);
-            document.getElementById('cardExpense').textContent = formatCurrency(totalExpense);
-            
-            const balanceEl = document.getElementById('cardBalance');
-            const sidebarBalanceEl = document.getElementById('sidebarBalance');
-            const sidebarStatusEl = document.getElementById('sidebarBalanceStatus');
-            const cardBalanceIconBg = document.getElementById('cardBalanceIconBg');
-            const cardBalanceIcon = document.getElementById('cardBalanceIcon');
+            document.getElementById("cardIncome").textContent = formatCurrency(totalIncome);
+            document.getElementById("cardExpense").textContent = formatCurrency(totalExpense);
+            document.getElementById("cardBalance").textContent = formatCurrency(balance);
+            document.getElementById("sidebarBalance").textContent = formatCurrency(balance);
 
-            balanceEl.textContent = formatCurrency(balance);
-            sidebarBalanceEl.textContent = formatCurrency(balance);
+            const balanceEl = document.getElementById("cardBalance");
+            const sidebarStatusEl = document.getElementById("sidebarBalanceStatus");
+            const cardBalanceIconBg = document.getElementById("cardBalanceIconBg");
+            const cardBalanceIcon = document.getElementById("cardBalanceIcon");
 
-            // Ajuste visual de saldo positivo/negativo
             if (balance >= 0) {
                 balanceEl.className = "text-2xl font-bold text-emerald-600";
-                sidebarBalanceEl.className = "text-3xl font-bold text-white mb-1";
-                
                 sidebarStatusEl.innerHTML = '<i class="fa-solid fa-arrow-trend-up mr-2"></i> Positivo';
-                sidebarStatusEl.className = "flex items-center text-sm mt-2 text-emerald-400";
-                
-                cardBalanceIconBg.className = "w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mr-4 transition-colors";
+                sidebarStatusEl.className = "mt-2 flex items-center text-sm text-emerald-400";
+                cardBalanceIconBg.className = "mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors";
                 cardBalanceIcon.className = "fa-solid fa-wallet text-xl";
             } else {
                 balanceEl.className = "text-2xl font-bold text-rose-600";
-                sidebarBalanceEl.className = "text-3xl font-bold text-white mb-1";
-                
                 sidebarStatusEl.innerHTML = '<i class="fa-solid fa-arrow-trend-down mr-2"></i> Negativo';
-                sidebarStatusEl.className = "flex items-center text-sm mt-2 text-rose-400";
-                
-                cardBalanceIconBg.className = "w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mr-4 transition-colors";
+                sidebarStatusEl.className = "mt-2 flex items-center text-sm text-rose-400";
+                cardBalanceIconBg.className = "mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600 transition-colors";
                 cardBalanceIcon.className = "fa-solid fa-triangle-exclamation text-xl";
             }
 
-            // Renderizar Tabela
-            const tbody = document.getElementById('transactionList');
-            const emptyState = document.getElementById('emptyState');
+            const tbody = document.getElementById("transactionList");
+            const emptyState = document.getElementById("emptyState");
             const tableWrapper = tbody.parentElement;
-            
-            document.getElementById('transactionCount').textContent = `${filteredTransactions.length} registro${filteredTransactions.length !== 1 ? 's' : ''}`;
 
-            tbody.innerHTML = '';
+            document.getElementById("transactionCount").textContent = `${filteredTransactions.length} registro${filteredTransactions.length !== 1 ? "s" : ""}`;
+            tbody.innerHTML = "";
 
             if (filteredTransactions.length === 0) {
-                const emptyTitle = document.getElementById('emptyStateTitle');
-                const emptyDescription = document.getElementById('emptyStateDescription');
-                const emptyAction = document.getElementById('emptyStateAction');
-
-                if (!hasActiveUser) {
-                    emptyTitle.textContent = 'Cadastre um usuario para comecar';
-                    emptyDescription.textContent = 'Crie pelo menos um usuario para salvar lancamentos financeiros no MongoDB Atlas.';
-                    emptyAction.textContent = 'Cadastrar usuario';
-                    emptyAction.onclick = openUserModal;
-                } else {
-                    emptyTitle.textContent = 'Nenhum lancamento encontrado';
-                    emptyDescription.textContent = 'Nao ha registros para os filtros selecionados ou voce ainda nao cadastrou nenhuma movimentacao.';
-                    emptyAction.textContent = 'Adicionar primeiro lancamento';
-                    emptyAction.onclick = openModal;
-                }
-
-                tableWrapper.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-            } else {
-                tableWrapper.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-
-                filteredTransactions.forEach(t => {
-                    const isIncome = t.type === 'entrada';
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-colors group";
-                    
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-slate-500">
-                            ${formatDateBr(t.date)}
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-slate-800">${t.description}</div>
-                            <div class="lg:hidden text-xs text-slate-500 mt-1">${t.category}</div>
-                        </td>
-                        <td class="px-6 py-4 hidden lg:table-cell">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                                ${t.category}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right font-medium ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
-                            ${isIncome ? '+' : '-'} ${formatCurrency(t.amount)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-slate-400">
-                            <button onclick="editTransaction('${t.id}')" class="p-1.5 hover:text-brand-600 transition-colors mr-2" title="Editar">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteTransaction('${t.id}')" class="p-1.5 hover:text-rose-600 transition-colors" title="Excluir">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                document.getElementById("emptyStateTitle").textContent = "Nenhum lancamento encontrado";
+                document.getElementById("emptyStateDescription").textContent = "Nao ha registros para os filtros selecionados ou voce ainda nao cadastrou nenhuma movimentacao.";
+                document.getElementById("emptyStateAction").textContent = "Adicionar primeiro lancamento";
+                tableWrapper.classList.add("hidden");
+                emptyState.classList.remove("hidden");
+                emptyState.classList.add("flex");
+                return;
             }
+
+            tableWrapper.classList.remove("hidden");
+            emptyState.classList.add("hidden");
+            emptyState.classList.remove("flex");
+
+            filteredTransactions.forEach((transaction) => {
+                const isIncome = transaction.type === "entrada";
+                const tr = document.createElement("tr");
+                tr.className = "group transition-colors hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="whitespace-nowrap px-6 py-4 text-slate-500">${formatDateBr(transaction.date)}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-slate-800">${transaction.description}</div>
+                        <div class="mt-1 text-xs text-slate-500 lg:hidden">${transaction.category}</div>
+                    </td>
+                    <td class="hidden px-6 py-4 lg:table-cell">
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">${transaction.category}</span>
+                    </td>
+                    <td class="whitespace-nowrap px-6 py-4 text-right font-medium ${isIncome ? "text-emerald-600" : "text-rose-600"}">
+                        ${isIncome ? "+" : "-"} ${formatCurrency(transaction.amount)}
+                    </td>
+                    <td class="whitespace-nowrap px-6 py-4 text-center text-slate-400">
+                        <button onclick="editTransaction('${transaction.id}')" class="mr-2 p-1.5 transition-colors hover:text-brand-600" title="Editar">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteTransaction('${transaction.id}')" class="p-1.5 transition-colors hover:text-rose-600" title="Excluir">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        // --- 5. FUNÇÕES AUXILIARES E INTERAÇÕES ---
+        function normalizeCategories(categories) {
+            return {
+                entrada: Array.isArray(categories?.entrada) ? [...categories.entrada].sort((a, b) => a.localeCompare(b, "pt-BR")) : [],
+                saida: Array.isArray(categories?.saida) ? [...categories.saida].sort((a, b) => a.localeCompare(b, "pt-BR")) : []
+            };
+        }
 
         function updateCategoryOptions() {
             const type = document.querySelector('input[name="type"]:checked').value;
-            const categorySelect = document.getElementById('category');
-            
-            categorySelect.innerHTML = '';
-            
-            // Renderiza categorias existentes (se houver)
+            const categorySelect = document.getElementById("category");
+            categorySelect.innerHTML = "";
+
             if (customCategories[type].length === 0) {
-                const option = document.createElement('option');
+                const option = document.createElement("option");
                 option.value = "";
                 option.textContent = "Nenhuma categoria salva...";
                 option.disabled = true;
                 option.selected = true;
                 categorySelect.appendChild(option);
             } else {
-                customCategories[type].forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
+                customCategories[type].forEach((category) => {
+                    const option = document.createElement("option");
+                    option.value = category;
+                    option.textContent = category;
                     categorySelect.appendChild(option);
                 });
             }
 
-            // Adiciona sempre a opção de criar nova categoria no final da lista
-            const newOption = document.createElement('option');
+            const newOption = document.createElement("option");
             newOption.value = "__new__";
             newOption.textContent = "+ Criar nova categoria...";
-            newOption.className = "font-bold text-brand-600 bg-brand-50";
             categorySelect.appendChild(newOption);
 
-            // Se for um novo lançamento com lista vazia, pré-selecionar o "__new__"
             if (customCategories[type].length === 0 && !editingId) {
                 categorySelect.value = "__new__";
             }
-            
-            handleCategoryChange(); // Atualiza a interface
+
+            handleCategoryChange();
         }
 
-        // Função para mostrar/esconder o campo de texto da nova categoria
         function handleCategoryChange() {
-            const categorySelect = document.getElementById('category');
-            const newCategoryWrapper = document.getElementById('newCategoryWrapper');
-            const newCategoryName = document.getElementById('newCategoryName');
-            
-            if (categorySelect.value === '__new__') {
-                newCategoryWrapper.classList.remove('hidden');
+            const categorySelect = document.getElementById("category");
+            const newCategoryWrapper = document.getElementById("newCategoryWrapper");
+            const newCategoryName = document.getElementById("newCategoryName");
+
+            if (categorySelect.value === "__new__") {
+                newCategoryWrapper.classList.remove("hidden");
                 newCategoryName.required = true;
                 newCategoryName.focus();
-            } else {
-                newCategoryWrapper.classList.add('hidden');
-                newCategoryName.required = false;
-                newCategoryName.value = '';
+                return;
             }
+
+            newCategoryWrapper.classList.add("hidden");
+            newCategoryName.required = false;
+            newCategoryName.value = "";
         }
 
         function populateMonthFilter() {
-            const select = document.getElementById('filterMonth');
+            const select = document.getElementById("filterMonth");
             const currentValue = select.value;
-            
-            // Extrair meses únicos no formato YYYY-MM
-            const months = [...new Set(transactions.map(t => t.date.substring(0, 7)))];
-            
-            // Ordenar descrescente
+            const months = [...new Set(transactions.map((transaction) => transaction.date.substring(0, 7)))];
+
             months.sort((a, b) => b.localeCompare(a));
-            
-            // Manter a opção "Todos"
             select.innerHTML = '<option value="all">Todos os Meses</option>';
-            
-            months.forEach(monthStr => {
-                const [year, month] = monthStr.split('-');
+
+            months.forEach((monthStr) => {
+                const [year, month] = monthStr.split("-");
                 const date = new Date(year, month - 1);
-                const monthName = date.toLocaleString('pt-BR', { month: 'long' });
-                const label = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-                
-                const option = document.createElement('option');
+                const monthName = date.toLocaleString("pt-BR", { month: "long" });
+                const option = document.createElement("option");
                 option.value = monthStr;
-                option.textContent = label;
+                option.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
                 select.appendChild(option);
             });
-            
-            // Restaurar valor selecionado se ainda existir
-            if (months.includes(currentValue) || currentValue === 'all') {
+
+            if (months.includes(currentValue) || currentValue === "all") {
                 select.value = currentValue;
             }
         }
 
-        // Manipulação Modal
-        const modal = document.getElementById('transactionModal');
-        const userModal = document.getElementById('userModal');
-        
         function openModal() {
-            if (!activeUserId) {
-                alert('Cadastre um usuario antes de adicionar lancamentos.');
-                openUserModal();
+            if (!currentUser) {
+                showAuthScreen("login");
                 return;
             }
 
-            modal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden'); // Evita scroll do body
-            
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.classList.add("overflow-hidden");
+
             if (!editingId) {
-                document.getElementById('modalTitle').textContent = 'Novo Lançamento';
-                document.getElementById('transactionForm').reset();
-                document.getElementById('date').valueAsDate = new Date();
+                document.getElementById("modalTitle").textContent = "Novo Lançamento";
+                document.getElementById("transactionForm").reset();
+                document.getElementById("date").valueAsDate = new Date();
                 updateCategoryOptions();
             }
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            document.body.classList.remove("overflow-hidden");
             editingId = null;
-            document.getElementById('transactionForm').reset();
-            document.getElementById('newCategoryWrapper').classList.add('hidden');
-            document.getElementById('newCategoryName').value = '';
-        }
-
-        function openUserModal() {
-            userModal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-        }
-
-        function closeUserModal() {
-            userModal.classList.add('hidden');
-            document.getElementById('userForm').reset();
-            if (!modal.classList.contains('hidden')) {
-                return;
-            }
-            document.body.classList.remove('overflow-hidden');
+            document.getElementById("transactionForm").reset();
+            document.getElementById("newCategoryWrapper").classList.add("hidden");
+            document.getElementById("newCategoryName").value = "";
         }
 
         function updateUserSummary(user) {
-            const nameEl = document.getElementById('sidebarUserName');
-            const officeEl = document.getElementById('sidebarOfficeName');
-            const transactionButton = document.getElementById('newTransactionButton');
-
-            if (!user) {
-                nameEl.textContent = 'Nenhum usuário';
-                officeEl.textContent = 'Cadastre um usuário para começar';
-                transactionButton.disabled = true;
-                transactionButton.classList.add('opacity-60', 'cursor-not-allowed');
-                return;
-            }
-
-            nameEl.textContent = user.name;
-            officeEl.textContent = user.officeName || user.email || 'Gestao Financeira';
-            transactionButton.disabled = false;
-            transactionButton.classList.remove('opacity-60', 'cursor-not-allowed');
+            document.getElementById("sidebarUserName").textContent = user?.name || "Usuário";
+            document.getElementById("sidebarOfficeName").textContent = user?.officeName || user?.email || "Escritorio";
         }
 
-        // Toggle Sidebar Mobile
+        function updateHeaderUser(user) {
+            document.getElementById("headerUserName").textContent = user?.name || "Usuário";
+            document.getElementById("headerUserEmail").textContent = user?.email || "email@escritorio.com";
+        }
+
+        function resetDashboard() {
+            transactions = [];
+            editingId = null;
+            customCategories = { entrada: [], saida: [] };
+            document.getElementById("cardIncome").textContent = formatCurrency(0);
+            document.getElementById("cardExpense").textContent = formatCurrency(0);
+            document.getElementById("cardBalance").textContent = formatCurrency(0);
+            document.getElementById("sidebarBalance").textContent = formatCurrency(0);
+            populateMonthFilter();
+            render();
+        }
+
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            
-            sidebar.classList.toggle('-translate-x-full');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                overlay.classList.add('hidden');
-            } else {
-                overlay.classList.remove('hidden');
-            }
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("mobileOverlay");
+            sidebar.classList.toggle("-translate-x-full");
+            overlay.classList.toggle("hidden", sidebar.classList.contains("-translate-x-full"));
         }
 
-        // Formatação
         function formatCurrency(value) {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
+            return new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL"
             }).format(value);
         }
 
         function formatDateBr(dateString) {
-            // dateString vem no formato YYYY-MM-DD
-            const [year, month, day] = dateString.split('-');
+            const [year, month, day] = dateString.split("-");
             return `${day}/${month}/${year}`;
-        }
-
-        function getTodayString() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
         }
 
         function updateLastUpdatedTime() {
             const now = new Date();
-            const formattedDate = now.toLocaleString('pt-BR', { 
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
+            const formattedDate = now.toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
             });
-            document.getElementById('lastUpdated').textContent = formattedDate;
+            document.getElementById("lastUpdated").textContent = formattedDate;
         }
-
     </script>
 </body>
 </html>
