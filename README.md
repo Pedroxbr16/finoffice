@@ -31,6 +31,7 @@ MONGODB_DB=finoffice
 EMAILJS_SERVICE_ID=service_xxxxxxx
 EMAILJS_TEMPLATE_ID=template_xxxxxxx
 EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
+EMAILJS_PRIVATE_KEY=xxxxxxxxxxxxxxx
 PORT=3000
 ```
 
@@ -40,6 +41,7 @@ PORT=3000
 - O login so e liberado depois da confirmacao com o codigo
 - A opcao "esqueci minha senha" envia outro codigo OTP
 - O usuario redefine a senha informando e-mail, codigo e nova senha
+- Se o EmailJS estiver com `strict mode` ativo, `EMAILJS_PRIVATE_KEY` e obrigatoria
 
 Os templates do EmailJS devem aceitar estes parametros:
 
