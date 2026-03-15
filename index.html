@@ -133,8 +133,8 @@
                 <i class="fa-solid fa-user-tie text-sm"></i>
             </div>
             <div>
-                <p class="text-sm font-medium text-white">Escritório Central</p>
-                <p class="text-xs text-slate-400">Gestão Financeira</p>
+                <p id="sidebarUserName" class="text-sm font-medium text-white">Nenhum usuário</p>
+                <p id="sidebarOfficeName" class="text-xs text-slate-400">Cadastre um usuário para começar</p>
             </div>
         </div>
     </aside>
@@ -151,8 +151,17 @@
                 <h1 class="text-xl font-semibold text-slate-800">Visão Geral</h1>
             </div>
             
-            <div>
-                <button onclick="openModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-brand-500/30 flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2">
+                    <select id="userSelect" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none min-w-48">
+                        <option value="">Carregando usuários...</option>
+                    </select>
+                    <button onclick="openUserModal()" class="border border-slate-300 hover:border-brand-500 hover:text-brand-600 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Novo usuário</span>
+                    </button>
+                </div>
+                <button id="newTransactionButton" onclick="openModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-brand-500/30 flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i>
                     <span class="hidden sm:inline">Novo Lançamento</span>
                 </button>
@@ -227,9 +236,9 @@
                     <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-4">
                         <i class="fa-regular fa-folder-open text-2xl"></i>
                     </div>
-                    <h3 class="text-base font-medium text-slate-700 mb-1">Nenhum lançamento encontrado</h3>
-                    <p class="text-sm text-slate-500 max-w-sm">Não há registros para os filtros selecionados ou você ainda não cadastrou nenhuma movimentação.</p>
-                    <button onclick="openModal()" class="mt-4 text-brand-600 font-medium text-sm hover:underline">Adicionar primeiro lançamento</button>
+                    <h3 id="emptyStateTitle" class="text-base font-medium text-slate-700 mb-1">Nenhum lançamento encontrado</h3>
+                    <p id="emptyStateDescription" class="text-sm text-slate-500 max-w-sm">Não há registros para os filtros selecionados ou você ainda não cadastrou nenhuma movimentação.</p>
+                    <button id="emptyStateAction" onclick="openModal()" class="mt-4 text-brand-600 font-medium text-sm hover:underline">Adicionar primeiro lançamento</button>
                 </div>
             </div>
             
@@ -337,74 +346,239 @@
         </div>
     </div>
 
+    <!-- Modal de Usuário -->
+    <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeUserModal()"></div>
+
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 z-10 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-semibold text-slate-800">Novo Usuário</h3>
+                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="userForm" class="p-6">
+                <div class="mb-4">
+                    <label for="userName" class="block text-sm font-medium text-slate-700 mb-1">Nome do usuário</label>
+                    <input type="text" id="userName" required placeholder="Ex: Paula Souza" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+                </div>
+
+                <div class="mb-4">
+                    <label for="officeName" class="block text-sm font-medium text-slate-700 mb-1">Nome do escritório</label>
+                    <input type="text" id="officeName" placeholder="Ex: Escritório Central" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+                </div>
+
+                <div class="mb-6">
+                    <label for="userEmail" class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
+                    <input type="email" id="userEmail" placeholder="Ex: contato@seuescritorio.com" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all sm:text-sm">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                    <button type="button" onclick="closeUserModal()" class="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors shadow-sm">
+                        Salvar Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Script Principal -->
     <script>
         // --- 1. CONFIGURAÇÕES E ESTADO GLOBAL ---
-        
-        // Estado das categorias customizadas (inicia vazio e cresce conforme uso)
+
+        const API_BASE = '/api';
         let customCategories = {
             entrada: [],
             saida: []
         };
-
-        // Estado do aplicativo
         let transactions = [];
+        let users = [];
         let editingId = null;
+        let activeUserId = localStorage.getItem('finOffice_activeUserId') || '';
 
         // --- 2. INICIALIZAÇÃO E EVENTOS ---
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar Data Rodapé
+        document.addEventListener('DOMContentLoaded', async () => {
             const now = new Date();
             document.getElementById('yearCopyright').textContent = now.getFullYear();
             updateLastUpdatedTime();
 
-            // Carregar dados
-            loadData();
-
-            // Setup Listeners
             document.getElementById('transactionForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('userForm').addEventListener('submit', handleUserSubmit);
             document.getElementById('filterMonth').addEventListener('change', render);
             document.getElementById('filterType').addEventListener('change', render);
-            
-            // Setar data default no form como hoje
+            document.getElementById('userSelect').addEventListener('change', handleUserChange);
             document.getElementById('date').valueAsDate = new Date();
+
+            await initializeApp();
         });
 
         // --- 3. LÓGICA DE NEGÓCIO (CRUD E STORAGE) ---
 
-        function loadData() {
-            // Carregar categorias salvas
-            const storedCategories = localStorage.getItem('finOffice_categories');
-            if (storedCategories) {
-                customCategories = JSON.parse(storedCategories);
+        async function initializeApp() {
+            try {
+                await loadUsers();
+
+                if (users.length === 0) {
+                    updateUserSummary(null);
+                    populateMonthFilter();
+                    render();
+                    openUserModal();
+                    return;
+                }
+
+                await syncActiveUser(activeUserId);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Nao foi possivel carregar os dados do sistema.');
+            }
+        }
+
+        async function apiFetch(path, options = {}) {
+            const config = {
+                method: options.method || 'GET',
+                headers: {
+                    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                    ...(options.headers || {})
+                }
+            };
+
+            if (options.body) {
+                config.body = options.body;
             }
 
-            // Carregar lançamentos
-            const storedData = localStorage.getItem('finOffice_transactions');
-            if (storedData) {
-                transactions = JSON.parse(storedData);
-            } else {
-                // Inicia vazio, já que não temos mais categorias pré-definidas para os dados de demonstração
-                transactions = [];
-                saveData();
+            const response = await fetch(`${API_BASE}${path}`, config);
+            const rawText = await response.text();
+            const data = rawText ? JSON.parse(rawText) : {};
+
+            if (!response.ok) {
+                const details = Array.isArray(data.details) ? ` ${data.details.join(' ')}` : '';
+                throw new Error((data.error || 'Erro ao comunicar com a API.') + details);
             }
+
+            return data;
+        }
+
+        function normalizeCategories(categories) {
+            return {
+                entrada: Array.isArray(categories?.entrada) ? [...categories.entrada].sort((a, b) => a.localeCompare(b, 'pt-BR')) : [],
+                saida: Array.isArray(categories?.saida) ? [...categories.saida].sort((a, b) => a.localeCompare(b, 'pt-BR')) : []
+            };
+        }
+
+        async function loadUsers() {
+            const data = await apiFetch('/users');
+            users = data.users || [];
+            populateUserSelect();
+        }
+
+        function populateUserSelect() {
+            const select = document.getElementById('userSelect');
+            select.innerHTML = '';
+
+            if (users.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Cadastre um usuario';
+                select.appendChild(option);
+                select.value = '';
+                return;
+            }
+
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.name} - ${user.officeName || 'Escritorio'}`;
+                select.appendChild(option);
+            });
+
+            select.value = activeUserId && users.some(user => user.id === activeUserId) ? activeUserId : users[0].id;
+        }
+
+        async function syncActiveUser(preferredUserId) {
+            if (preferredUserId && users.some(user => user.id === preferredUserId)) {
+                activeUserId = preferredUserId;
+            } else {
+                activeUserId = users[0]?.id || '';
+            }
+
+            localStorage.setItem('finOffice_activeUserId', activeUserId);
+            populateUserSelect();
+            await loadData();
+        }
+
+        async function loadData() {
+            if (!activeUserId) {
+                transactions = [];
+                customCategories = { entrada: [], saida: [] };
+                updateUserSummary(null);
+                populateMonthFilter();
+                render();
+                return;
+            }
+
+            const [userResponse, transactionsResponse] = await Promise.all([
+                apiFetch(`/users/${activeUserId}`),
+                apiFetch(`/transactions?userId=${activeUserId}`)
+            ]);
+
+            const currentUser = userResponse.user;
+            transactions = transactionsResponse.transactions || [];
+            customCategories = normalizeCategories(currentUser.categories);
+            users = users.map(user => user.id === currentUser.id ? currentUser : user);
+
+            updateUserSummary(currentUser);
+            populateUserSelect();
             populateMonthFilter();
+            updateLastUpdatedTime();
             render();
         }
 
-        function saveData() {
-            localStorage.setItem('finOffice_transactions', JSON.stringify(transactions));
-            populateMonthFilter();
-            updateLastUpdatedTime();
+        async function handleUserChange(event) {
+            try {
+                await syncActiveUser(event.target.value);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Nao foi possivel trocar o usuario ativo.');
+            }
         }
 
-        function saveCategories() {
-            localStorage.setItem('finOffice_categories', JSON.stringify(customCategories));
-        }
-
-        function handleFormSubmit(e) {
+        async function handleUserSubmit(e) {
             e.preventDefault();
+
+            try {
+                const payload = {
+                    name: document.getElementById('userName').value.trim(),
+                    officeName: document.getElementById('officeName').value.trim(),
+                    email: document.getElementById('userEmail').value.trim()
+                };
+
+                const response = await apiFetch('/users', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                closeUserModal();
+                await loadUsers();
+                await syncActiveUser(response.user.id);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Nao foi possivel salvar o usuario.');
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            if (!activeUserId) {
+                alert('Cadastre um usuario antes de adicionar lancamentos.');
+                openUserModal();
+                return;
+            }
 
             const description = document.getElementById('description').value.trim();
             const amount = parseFloat(document.getElementById('amount').value);
@@ -412,34 +586,24 @@
             const type = document.querySelector('input[name="type"]:checked').value;
             let category = document.getElementById('category').value;
 
-            // Lógica para interceptar, salvar e usar a nova categoria
             if (category === '__new__') {
                 const newCatName = document.getElementById('newCategoryName').value.trim();
                 if (!newCatName) {
-                    alert("Por favor, digite o nome da nova categoria.");
+                    alert('Por favor, digite o nome da nova categoria.');
                     return;
                 }
-                
-                // Verifica se a categoria já existe (ignorando maiúsculas/minúsculas)
-                const exists = customCategories[type].find(c => c.toLowerCase() === newCatName.toLowerCase());
-                
-                if (!exists) {
-                    customCategories[type].push(newCatName);
-                    customCategories[type].sort(); // Mantém a lista em ordem alfabética
-                    saveCategories();
-                    category = newCatName;
-                } else {
-                    category = exists; // Evita duplicar se o usuário digitar algo que já existe
-                }
+
+                const existingCategory = customCategories[type].find(cat => cat.toLowerCase() === newCatName.toLowerCase());
+                category = existingCategory || newCatName;
             }
 
             if (!description || isNaN(amount) || !date || !category) {
-                alert("Por favor, preencha todos os campos.");
+                alert('Por favor, preencha todos os campos.');
                 return;
             }
 
-            const transactionData = {
-                id: editingId || Date.now().toString(),
+            const payload = {
+                userId: activeUserId,
                 description,
                 amount,
                 date,
@@ -447,21 +611,25 @@
                 category
             };
 
-            if (editingId) {
-                // Atualizar
-                const index = transactions.findIndex(t => t.id === editingId);
-                if (index !== -1) transactions[index] = transactionData;
-            } else {
-                // Inserir
-                transactions.push(transactionData);
+            try {
+                if (editingId) {
+                    await apiFetch(`/transactions/${editingId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await apiFetch('/transactions', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                closeModal();
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Nao foi possivel salvar o lancamento.');
             }
-
-            // Ordena descrescente por data
-            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            saveData();
-            closeModal();
-            render();
         }
 
         function editTransaction(id) {
@@ -488,26 +656,35 @@
             // Set category after options are populated
             setTimeout(() => {
                 document.getElementById('category').value = transaction.category;
+                handleCategoryChange();
             }, 10);
 
             openModal();
         }
 
-        function deleteTransaction(id) {
-            if (confirm("Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.")) {
-                transactions = transactions.filter(t => t.id !== id);
-                saveData();
-                render();
+        async function deleteTransaction(id) {
+            if (!confirm('Tem certeza que deseja excluir este lancamento? Esta acao nao pode ser desfeita.')) {
+                return;
+            }
+
+            try {
+                await apiFetch(`/transactions/${id}`, {
+                    method: 'DELETE'
+                });
+                await loadData();
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Nao foi possivel excluir o lancamento.');
             }
         }
 
         // --- 4. RENDERIZAÇÃO E UI ---
 
         function render() {
+            const hasActiveUser = Boolean(activeUserId);
             const filterMonth = document.getElementById('filterMonth').value;
             const filterType = document.getElementById('filterType').value;
 
-            // Filtragem
             let filteredTransactions = transactions.filter(t => {
                 const monthMatch = filterMonth === 'all' || t.date.substring(0, 7) === filterMonth;
                 const typeMatch = filterType === 'all' || t.type === filterType;
@@ -569,6 +746,22 @@
             tbody.innerHTML = '';
 
             if (filteredTransactions.length === 0) {
+                const emptyTitle = document.getElementById('emptyStateTitle');
+                const emptyDescription = document.getElementById('emptyStateDescription');
+                const emptyAction = document.getElementById('emptyStateAction');
+
+                if (!hasActiveUser) {
+                    emptyTitle.textContent = 'Cadastre um usuario para comecar';
+                    emptyDescription.textContent = 'Crie pelo menos um usuario para salvar lancamentos financeiros no MongoDB Atlas.';
+                    emptyAction.textContent = 'Cadastrar usuario';
+                    emptyAction.onclick = openUserModal;
+                } else {
+                    emptyTitle.textContent = 'Nenhum lancamento encontrado';
+                    emptyDescription.textContent = 'Nao ha registros para os filtros selecionados ou voce ainda nao cadastrou nenhuma movimentacao.';
+                    emptyAction.textContent = 'Adicionar primeiro lancamento';
+                    emptyAction.onclick = openModal;
+                }
+
                 tableWrapper.classList.add('hidden');
                 emptyState.classList.remove('hidden');
                 emptyState.classList.add('flex');
@@ -702,8 +895,15 @@
 
         // Manipulação Modal
         const modal = document.getElementById('transactionModal');
+        const userModal = document.getElementById('userModal');
         
         function openModal() {
+            if (!activeUserId) {
+                alert('Cadastre um usuario antes de adicionar lancamentos.');
+                openUserModal();
+                return;
+            }
+
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden'); // Evita scroll do body
             
@@ -720,6 +920,41 @@
             document.body.classList.remove('overflow-hidden');
             editingId = null;
             document.getElementById('transactionForm').reset();
+            document.getElementById('newCategoryWrapper').classList.add('hidden');
+            document.getElementById('newCategoryName').value = '';
+        }
+
+        function openUserModal() {
+            userModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeUserModal() {
+            userModal.classList.add('hidden');
+            document.getElementById('userForm').reset();
+            if (!modal.classList.contains('hidden')) {
+                return;
+            }
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function updateUserSummary(user) {
+            const nameEl = document.getElementById('sidebarUserName');
+            const officeEl = document.getElementById('sidebarOfficeName');
+            const transactionButton = document.getElementById('newTransactionButton');
+
+            if (!user) {
+                nameEl.textContent = 'Nenhum usuário';
+                officeEl.textContent = 'Cadastre um usuário para começar';
+                transactionButton.disabled = true;
+                transactionButton.classList.add('opacity-60', 'cursor-not-allowed');
+                return;
+            }
+
+            nameEl.textContent = user.name;
+            officeEl.textContent = user.officeName || user.email || 'Gestao Financeira';
+            transactionButton.disabled = false;
+            transactionButton.classList.remove('opacity-60', 'cursor-not-allowed');
         }
 
         // Toggle Sidebar Mobile
